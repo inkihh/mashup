@@ -13,11 +13,17 @@ logger = logging.getLogger("mashup.cli")
 HELP_TEXT = """\
 Automatic music mashup generator.
 
-Run the full pipeline with 'mashup run', or resume an incomplete run with 'mashup resume'.
-Individual steps can also be run separately for more control.
+\b
+Quick start:
+  mashup run                                        AI picks both tracks
+  mashup run --track "Artist - Title"               Seed one track
+  mashup run --track "A - X" --track "B - Y"        Specify both tracks
+  mashup run --genre "electronic" --era "2010s"     With constraints
+  mashup resume                                     Resume a failed run
 
-  \b
-  run             Full pipeline — always starts fresh
+\b
+Commands:
+  run             Full pipeline (--track, --genre, --mood, --era, --debug)
   resume          Pick up an incomplete run from where it left off
   select-tracks   AI picks two compatible tracks
   download        Download audio from YouTube
