@@ -1,0 +1,13 @@
+.env
+.claude/
+TASK.md
+CLAUDE.md
+output/
+logs/
+__pycache__/
+*.pyc
+.venv/
+*.egg-info/
+dist/
+build/
+src/mashup/models/

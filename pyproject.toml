@@ -1,0 +1,36 @@
+[project]
+name = "mashup"
+version = "0.1.0"
+description = "Automatic music mashup generator"
+requires-python = ">=3.12"
+dependencies = [
+    "anthropic>=0.42",
+    "click>=8.1",
+    "pydantic>=2.0",
+    "jinja2>=3.1",
+    "python-dotenv>=1.0",
+    "yt-dlp>=2024.0",
+    "beat_this @ git+https://github.com/CPJKU/beat_this.git",
+    "torch>=2.0",
+    "soundfile>=0.12",
+    "essentia-tensorflow>=2.1b6.dev0",
+    "pyrubberband>=0.3",
+    "numpy>=1.24",
+    "pedalboard>=0.9",
+    "lameenc>=1.7",
+    "openai>=1.0",
+    "rich>=13.0",
+]
+
+[project.scripts]
+mashup = "mashup.cli:cli"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/mashup"]
