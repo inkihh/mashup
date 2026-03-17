@@ -108,11 +108,16 @@ def _chat_deepseek(prompt: str, *, model: str, max_tokens: int) -> str:
         max_tokens = max(max_tokens, 16384)
 
     client = OpenAI(api_key=api_key, base_url=base_url)
-    response = client.chat.completions.create(
-        model=model,
-        max_tokens=max_tokens,
-        messages=[{"role": "user", "content": prompt}],
-    )
+    kwargs: dict = {
+        "model": model,
+        "max_tokens": max_tokens,
+        "messages": [{"role": "user", "content": prompt}],
+    }
+    # Reasoner models don't support temperature
+    if "reasoner" not in model:
+        kwargs["temperature"] = 1.3
+
+    response = client.chat.completions.create(**kwargs)
     logger.debug("DeepSeek usage: %s", response.usage)
     logger.debug("DeepSeek finish_reason: %s", response.choices[0].finish_reason)
 
