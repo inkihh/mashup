@@ -16,7 +16,16 @@ Pick two tracks that satisfy ALL of the following:
 
 6. **Variety** — Do NOT pick any of the following tracks (they have been used too many times): "Say My Name" by Destiny's Child, "Firestarter" by The Prodigy, "Killing in the Name" by RATM, "Seven Nation Army" by The White Stripes, "Survivor" by Destiny's Child, "Breathe" by The Prodigy. Be creative and pick something different every time.
 
-{% if seed_artist and seed_title %}
+{% if track_b_artist and track_b_title %}
+## Both tracks specified
+
+The user has chosen both tracks. You MUST use these exact tracks — do NOT substitute or suggest alternatives:
+
+- **Track A:** {{ seed_artist }} - {{ seed_title }}
+- **Track B:** {{ track_b_artist }} - {{ track_b_title }}
+
+Use web search to look up the accurate BPM, key, and genre for each track, then return them in the output format below. Include a rationale about how well they work together.
+{% elif seed_artist and seed_title %}
 ## Seed track
 
 The user has provided one track as a starting point. You MUST use this as track_a and pick a complementary track_b:

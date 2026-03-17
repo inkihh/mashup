@@ -65,21 +65,24 @@ Use `--debug` to see verbose output from all libraries (TensorFlow, yt-dlp, etc.
 | `--genre` | Preferred genre (e.g., `--genre "hip-hop"`) |
 | `--mood` | Preferred mood (e.g., `--mood "energetic"`) |
 | `--era` | Preferred era (e.g., `--era "80s"`) |
-| `--seed-artist` + `--seed-title` | Provide one track, let AI pick the second |
+| `--track` | Track as `"Artist - Title"`. Use once to seed one track, twice to specify both. |
 | `--output-dir` | Output directory (default: `output/`) |
 | `--debug` | Show verbose output from all libraries |
 
 #### Examples
 
 ```bash
-# Fully automatic
+# Fully automatic — AI picks both tracks
 mashup run
 
 # With constraints
 mashup run --genre "electronic" --era "2010s"
 
-# Seed one track
-mashup run --seed-artist "Daft Punk" --seed-title "Around the World"
+# Seed one track, AI picks the other
+mashup run --track "Daft Punk - Around the World"
+
+# Specify both tracks
+mashup run --track "Michael Jackson - Billie Jean" --track "Daft Punk - Around the World"
 ```
 
 ### Resume an incomplete run
@@ -114,7 +117,7 @@ AI picks two tracks from different genres that work well together (compatible ke
 | `--genre` | Preferred genre (e.g., `--genre "hip-hop"`) |
 | `--mood` | Preferred mood (e.g., `--mood "energetic"`) |
 | `--era` | Preferred era (e.g., `--era "80s"`) |
-| `--seed-artist` + `--seed-title` | Provide one track, let AI pick the second |
+| `--track` | Track as `"Artist - Title"`. Use once to seed one track, twice to specify both. |
 | `--output-dir` | Output directory (default: `output/`) |
 
 #### Examples
@@ -127,7 +130,10 @@ mashup select-tracks
 mashup select-tracks --genre "electronic" --era "2010s"
 
 # Seed one track, let AI pick the match
-mashup select-tracks --seed-artist "Daft Punk" --seed-title "Around the World"
+mashup select-tracks --track "Daft Punk - Around the World"
+
+# Specify both tracks (AI looks up BPM/key metadata)
+mashup select-tracks --track "Michael Jackson - Billie Jean" --track "Daft Punk - Around the World"
 ```
 
 ### Download audio

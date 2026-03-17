@@ -35,20 +35,29 @@ def cli() -> None:
     setup_logging()
 
 
+def _parse_track(value: str) -> tuple[str, str]:
+    """Parse 'Artist - Title' into (artist, title)."""
+    if " - " not in value:
+        raise click.UsageError(
+            f"Invalid --track format: '{value}'. Expected 'Artist - Title'."
+        )
+    artist, title = value.split(" - ", 1)
+    return artist.strip(), title.strip()
+
+
 @cli.command("run")
 @click.option("--genre", default=None, help="Preferred genre constraint.")
 @click.option("--mood", default=None, help="Preferred mood (e.g., energetic, chill).")
 @click.option("--era", default=None, help="Preferred era (e.g., 80s, 2010s).")
-@click.option("--seed-artist", default=None, help="Artist of a seed track (use with --seed-title).")
-@click.option("--seed-title", default=None, help="Title of a seed track (use with --seed-artist).")
+@click.option("--track", "tracks", multiple=True,
+              help="Track as 'Artist - Title'. Use once to seed, twice to specify both.")
 @click.option("--output-dir", default="output", help="Directory to save results.")
 @click.option("--debug", is_flag=True, default=False, help="Show verbose output from all libraries.")
 def run_cmd(
     genre: str | None,
     mood: str | None,
     era: str | None,
-    seed_artist: str | None,
-    seed_title: str | None,
+    tracks: tuple[str, ...],
     output_dir: str,
     debug: bool,
 ) -> None:
@@ -59,8 +68,14 @@ def run_cmd(
 
     Use 'mashup resume' to pick up a failed or incomplete run.
     """
-    if (seed_artist is None) != (seed_title is None):
-        raise click.UsageError("--seed-artist and --seed-title must be provided together.")
+    if len(tracks) > 2:
+        raise click.UsageError("At most two --track options allowed.")
+
+    seed_artist = seed_title = track_b_artist = track_b_title = None
+    if len(tracks) >= 1:
+        seed_artist, seed_title = _parse_track(tracks[0])
+    if len(tracks) == 2:
+        track_b_artist, track_b_title = _parse_track(tracks[1])
 
     from mashup.pipeline import run_pipeline
 
@@ -71,6 +86,8 @@ def run_cmd(
             era=era,
             seed_artist=seed_artist,
             seed_title=seed_title,
+            track_b_artist=track_b_artist,
+            track_b_title=track_b_title,
             output_dir=output_dir,
             debug=debug,
         )
@@ -137,26 +154,33 @@ def resume_cmd(output_dir: Path, debug: bool) -> None:
 @click.option("--genre", default=None, help="Preferred genre constraint.")
 @click.option("--mood", default=None, help="Preferred mood (e.g., energetic, chill).")
 @click.option("--era", default=None, help="Preferred era (e.g., 80s, 2010s).")
-@click.option("--seed-artist", default=None, help="Artist of a seed track (use with --seed-title).")
-@click.option("--seed-title", default=None, help="Title of a seed track (use with --seed-artist).")
+@click.option("--track", "tracks", multiple=True,
+              help="Track as 'Artist - Title'. Use once to seed, twice to specify both.")
 @click.option("--output-dir", default="output", help="Directory to save results.")
 def select_tracks_cmd(
     genre: str | None,
     mood: str | None,
     era: str | None,
-    seed_artist: str | None,
-    seed_title: str | None,
+    tracks: tuple[str, ...],
     output_dir: str,
 ) -> None:
     """Use AI to select two tracks for a mashup."""
-    if (seed_artist is None) != (seed_title is None):
-        raise click.UsageError("--seed-artist and --seed-title must be provided together.")
+    if len(tracks) > 2:
+        raise click.UsageError("At most two --track options allowed.")
+
+    seed_artist = seed_title = track_b_artist = track_b_title = None
+    if len(tracks) >= 1:
+        seed_artist, seed_title = _parse_track(tracks[0])
+    if len(tracks) == 2:
+        track_b_artist, track_b_title = _parse_track(tracks[1])
 
     logger.info("select-tracks: genre=%s mood=%s era=%s seed=%s", genre, mood, era, seed_artist)
 
     result = select_tracks(
         seed_artist=seed_artist,
         seed_title=seed_title,
+        track_b_artist=track_b_artist,
+        track_b_title=track_b_title,
         genre=genre,
         mood=mood,
         era=era,

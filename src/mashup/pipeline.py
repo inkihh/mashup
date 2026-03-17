@@ -122,6 +122,8 @@ def _step_select_tracks(
     era: str | None,
     seed_artist: str | None,
     seed_title: str | None,
+    track_b_artist: str | None,
+    track_b_title: str | None,
     output_dir: Path,
 ) -> Path:
     """Step 1: Select tracks. Returns the project directory path."""
@@ -135,6 +137,8 @@ def _step_select_tracks(
         result = select_tracks(
             seed_artist=seed_artist,
             seed_title=seed_title,
+            track_b_artist=track_b_artist,
+            track_b_title=track_b_title,
             genre=genre,
             mood=mood,
             era=era,
@@ -422,6 +426,8 @@ def run_pipeline(
     era: str | None = None,
     seed_artist: str | None = None,
     seed_title: str | None = None,
+    track_b_artist: str | None = None,
+    track_b_title: str | None = None,
     output_dir: str = "output",
     debug: bool = False,
 ) -> Path:
@@ -452,6 +458,8 @@ def run_pipeline(
                 era=era,
                 seed_artist=seed_artist,
                 seed_title=seed_title,
+                track_b_artist=track_b_artist,
+                track_b_title=track_b_title,
                 output_dir=output_path,
             )
             completed.append("Track selection")
