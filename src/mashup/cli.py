@@ -176,15 +176,23 @@ def select_tracks_cmd(
 
     logger.info("select-tracks: genre=%s mood=%s era=%s seed=%s", genre, mood, era, seed_artist)
 
-    result = select_tracks(
-        seed_artist=seed_artist,
-        seed_title=seed_title,
-        track_b_artist=track_b_artist,
-        track_b_title=track_b_title,
-        genre=genre,
-        mood=mood,
-        era=era,
-    )
+    if seed_artist and seed_title and track_b_artist and track_b_title:
+        # Both tracks specified — skip AI, create selection directly
+        from mashup.models import Track, TrackSelection
+
+        result = TrackSelection(
+            track_a=Track(artist=seed_artist, title=seed_title, key="unknown", bpm=0, genre="unknown"),
+            track_b=Track(artist=track_b_artist, title=track_b_title, key="unknown", bpm=0, genre="unknown"),
+            rationale="User-specified track pairing.",
+        )
+    else:
+        result = select_tracks(
+            seed_artist=seed_artist,
+            seed_title=seed_title,
+            genre=genre,
+            mood=mood,
+            era=era,
+        )
 
     result_json = result.model_dump_json(indent=2)
     click.echo(result_json)

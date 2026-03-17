@@ -131,18 +131,30 @@ def _step_select_tracks(
     _print_step_start(step, total, name)
     t0 = time.monotonic()
 
-    from mashup.track_selection import select_tracks
+    both_specified = seed_artist and seed_title and track_b_artist and track_b_title
 
-    with console.status("[bold blue]  AI is selecting tracks..."):
-        result = select_tracks(
-            seed_artist=seed_artist,
-            seed_title=seed_title,
-            track_b_artist=track_b_artist,
-            track_b_title=track_b_title,
-            genre=genre,
-            mood=mood,
-            era=era,
+    if both_specified:
+        # Both tracks given — skip AI, create selection directly
+        from mashup.models import Track
+
+        result = TrackSelection(
+            track_a=Track(artist=seed_artist, title=seed_title,
+                          key="unknown", bpm=0, genre="unknown"),
+            track_b=Track(artist=track_b_artist, title=track_b_title,
+                          key="unknown", bpm=0, genre="unknown"),
+            rationale="User-specified track pairing.",
         )
+    else:
+        from mashup.track_selection import select_tracks as _select
+
+        with console.status("[bold blue]  AI is selecting tracks..."):
+            result = _select(
+                seed_artist=seed_artist,
+                seed_title=seed_title,
+                genre=genre,
+                mood=mood,
+                era=era,
+            )
 
     result_json = result.model_dump_json(indent=2)
     output_dir.mkdir(parents=True, exist_ok=True)
