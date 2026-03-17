@@ -20,6 +20,7 @@ dependencies = [
     "lameenc>=1.7",
     "openai>=1.0",
     "rich>=13.0",
+    "simple-term-menu>=1.6",
 ]
 
 [project.scripts]

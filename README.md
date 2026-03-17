@@ -54,9 +54,9 @@ When using DeepSeek, track selection uses `deepseek-chat` and mix planning uses 
 mashup run
 ```
 
-Runs the entire mashup pipeline end-to-end: AI track selection, YouTube download, beat detection, feature enrichment, AI mix planning, time-stretch/pitch-shift, and final mixdown. Shows rich progress output with step indicators and timing.
+Runs the entire mashup pipeline end-to-end: AI track selection, YouTube download, beat detection, feature enrichment, AI mix planning, time-stretch/pitch-shift, and final mixdown. Always starts fresh. Shows rich progress output with step indicators and timing.
 
-**Resumable** — if a step's output files already exist, it's skipped automatically. Re-run after a failure to pick up where you left off.
+Use `--debug` to see verbose output from all libraries (TensorFlow, yt-dlp, etc.).
 
 #### Options
 
@@ -67,6 +67,7 @@ Runs the entire mashup pipeline end-to-end: AI track selection, YouTube download
 | `--era` | Preferred era (e.g., `--era "80s"`) |
 | `--seed-artist` + `--seed-title` | Provide one track, let AI pick the second |
 | `--output-dir` | Output directory (default: `output/`) |
+| `--debug` | Show verbose output from all libraries |
 
 #### Examples
 
@@ -80,6 +81,19 @@ mashup run --genre "electronic" --era "2010s"
 # Seed one track
 mashup run --seed-artist "Daft Punk" --seed-title "Around the World"
 ```
+
+### Resume an incomplete run
+
+```bash
+mashup resume
+```
+
+Shows an interactive list of existing projects with their status (e.g., "enriched -> plan-mix"). Pick one with arrow keys to resume from where it left off — completed steps are skipped automatically.
+
+| Flag | Description |
+|------|-------------|
+| `--output-dir` | Base output directory (default: `output/`) |
+| `--debug` | Show verbose output from all libraries |
 
 ### Individual steps
 

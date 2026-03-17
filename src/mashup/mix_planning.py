@@ -28,8 +28,17 @@ def build_mix_prompt(
     )
 
 
-def _fixup_effects(effects: list) -> None:
-    """Normalize effect field names from AI model variants."""
+_STRING_EFFECT_DEFAULTS = {
+    "high_pass": {"type": "high_pass", "freq_hz": 200},
+    "low_pass": {"type": "low_pass", "freq_hz": 5000},
+    "reverb": {"type": "reverb", "wet_ratio": 0.3},
+    "delay": {"type": "delay", "delay_ms": 250, "feedback": 0.3},
+    "compressor": {"type": "compressor", "threshold_db": -20.0, "ratio": 4.0},
+}
+
+
+def _fixup_effects(effects: list) -> list:
+    """Normalize effect field names and string shorthand from AI model variants."""
     aliases = {
         "frequency": "freq_hz",
         "cutoff": "freq_hz",
@@ -39,12 +48,23 @@ def _fixup_effects(effects: list) -> None:
         "delay_time": "delay_ms",
         "threshold": "threshold_db",
     }
+    result = []
     for effect in effects:
+        # Handle string shorthand like "high_pass" → full object with defaults
+        if isinstance(effect, str):
+            default = _STRING_EFFECT_DEFAULTS.get(effect)
+            if default:
+                result.append(dict(default))
+            else:
+                logger.warning("Unknown effect string '%s', skipping", effect)
+            continue
         if not isinstance(effect, dict):
             continue
         for old_key, new_key in aliases.items():
             if old_key in effect and new_key not in effect:
                 effect[new_key] = effect.pop(old_key)
+        result.append(effect)
+    return result
 
 
 def _fixup_mix_plan(data: dict) -> None:
@@ -53,7 +73,7 @@ def _fixup_mix_plan(data: dict) -> None:
         for track_key in ("track_a", "track_b"):
             role = s.get(track_key)
             if isinstance(role, dict) and "effects" in role:
-                _fixup_effects(role["effects"])
+                role["effects"] = _fixup_effects(role["effects"])
 
 
 def plan_mix(project_dir: Path) -> MixPlan:

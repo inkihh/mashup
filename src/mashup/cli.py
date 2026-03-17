@@ -13,10 +13,12 @@ logger = logging.getLogger("mashup.cli")
 HELP_TEXT = """\
 Automatic music mashup generator.
 
-Run the full pipeline with 'mashup run', or execute individual steps:
+Run the full pipeline with 'mashup run', or resume an incomplete run with 'mashup resume'.
+Individual steps can also be run separately for more control.
 
   \b
-  run             Full pipeline (select → download → detect → enrich → plan → prepare → mixdown)
+  run             Full pipeline — always starts fresh
+  resume          Pick up an incomplete run from where it left off
   select-tracks   AI picks two compatible tracks
   download        Download audio from YouTube
   detect-beats    Beat and downbeat detection
@@ -40,6 +42,7 @@ def cli() -> None:
 @click.option("--seed-artist", default=None, help="Artist of a seed track (use with --seed-title).")
 @click.option("--seed-title", default=None, help="Title of a seed track (use with --seed-artist).")
 @click.option("--output-dir", default="output", help="Directory to save results.")
+@click.option("--debug", is_flag=True, default=False, help="Show verbose output from all libraries.")
 def run_cmd(
     genre: str | None,
     mood: str | None,
@@ -47,13 +50,14 @@ def run_cmd(
     seed_artist: str | None,
     seed_title: str | None,
     output_dir: str,
+    debug: bool,
 ) -> None:
-    """Run the full mashup pipeline end-to-end.
+    """Run the full mashup pipeline end-to-end (always starts fresh).
 
     Chains all steps: track selection, download, beat detection, feature
     enrichment, mix planning, audio preparation, and mixdown.
 
-    Resumable — skips steps whose output files already exist.
+    Use 'mashup resume' to pick up a failed or incomplete run.
     """
     if (seed_artist is None) != (seed_title is None):
         raise click.UsageError("--seed-artist and --seed-title must be provided together.")
@@ -68,7 +72,63 @@ def run_cmd(
             seed_artist=seed_artist,
             seed_title=seed_title,
             output_dir=output_dir,
+            debug=debug,
         )
+    except Exception:
+        sys.exit(1)
+
+
+@cli.command("resume")
+@click.option("--output-dir", default="output", type=click.Path(path_type=Path), help="Base output directory.")
+@click.option("--debug", is_flag=True, default=False, help="Show verbose output from all libraries.")
+def resume_cmd(output_dir: Path, debug: bool) -> None:
+    """Resume an incomplete pipeline run.
+
+    Shows a list of existing projects and lets you pick one to resume.
+    Skips steps whose output files already exist.
+    """
+    from simple_term_menu import TerminalMenu
+
+    from mashup.pipeline import (
+        detect_project_status,
+        list_projects,
+        resume_pipeline,
+    )
+
+    projects = list_projects(output_dir)
+    if not projects:
+        click.echo(f"No projects found in {output_dir}/")
+        sys.exit(1)
+
+    # Build menu entries with status
+    from rich.console import Console as _C
+    from rich.text import Text
+
+    plain_console = _C(highlight=False)
+
+    entries = []
+    for p in projects:
+        status = detect_project_status(p)
+        # Render rich markup to plain text for the menu
+        text = Text.from_markup(f"{p.name}  {status}")
+        entries.append(text.plain)
+
+    menu = TerminalMenu(
+        entries,
+        title="Select a project to resume:",
+    )
+    idx = menu.show()
+
+    if idx is None:
+        # User cancelled
+        sys.exit(0)
+
+    selected = projects[idx]
+    click.echo(f"Resuming: {selected}")
+    click.echo()
+
+    try:
+        resume_pipeline(selected, debug=debug)
     except Exception:
         sys.exit(1)
 
