@@ -224,17 +224,11 @@ def _step_detect_beats(step: int, total: int, project_dir: Path, *, skip_existin
         )
         results.append(result)
 
-    # BPM compatibility check
+    # BPM compatibility check (considers half/double-time)
     if len(results) == 2:
-        bpm_a, bpm_b = results[0].bpm, results[1].bpm
-        bpm_diff_pct = abs(bpm_a - bpm_b) / min(bpm_a, bpm_b) * 100
-        if bpm_diff_pct > 15:
-            raise RuntimeError(
-                f"Detected BPMs are {bpm_diff_pct:.1f}% apart "
-                f"({bpm_a:.1f} vs {bpm_b:.1f}). "
-                f"These tracks may not work well together. "
-                f"Consider re-running track selection."
-            )
+        from mashup.beat_utils import check_bpm_compatibility
+
+        check_bpm_compatibility(results[0].bpm, results[1].bpm)
 
     _print_step_done(step, total, name, time.monotonic() - t0)
 

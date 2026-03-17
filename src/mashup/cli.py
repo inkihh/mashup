@@ -273,17 +273,14 @@ def detect_beats_cmd(audio: Path | None, project_dir: Path | None) -> None:
         click.echo(f"  Saved to: {out_file}")
         results.append(result)
 
-    # BPM compatibility check when analyzing a project (2 tracks)
+    # BPM compatibility check (considers half/double-time)
     if len(results) == 2:
-        bpm_a, bpm_b = results[0].bpm, results[1].bpm
-        bpm_diff_pct = abs(bpm_a - bpm_b) / min(bpm_a, bpm_b) * 100
-        if bpm_diff_pct > 15:
-            click.echo(
-                f"\n  WARNING: Detected BPMs are {bpm_diff_pct:.1f}% apart "
-                f"({bpm_a:.1f} vs {bpm_b:.1f}). "
-                f"These tracks may not work well together. "
-                f"Consider re-running track selection."
-            )
+        from mashup.beat_utils import check_bpm_compatibility
+
+        try:
+            check_bpm_compatibility(results[0].bpm, results[1].bpm)
+        except RuntimeError as e:
+            click.echo(f"\n  WARNING: {e}")
             raise click.Abort()
 
 
